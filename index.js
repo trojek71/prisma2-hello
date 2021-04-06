@@ -5,6 +5,7 @@ import { GraphQLDateTime } from 'graphql-iso-date'
 import { v4 as uuid } from 'uuid'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import getUserId from './src/utils/getUserId'
 
 const typeDefs = `
 scalar DateTime
@@ -47,7 +48,7 @@ type User {
     type Mutation {
          createUser(name: String, email: String, password: String!): AuthPayload!
          createProfile(bio: String, userID: String!): Profile
-         createPost(title: String, content: String, published : Boolean, author: String!): Post!
+         createPost(title: String, content: String, published : Boolean): Post!
          deleteUser(id:String):User
          login(email:String!, password:String!): AuthPayload!
     }
@@ -129,6 +130,7 @@ const resolvers = {
 
       createPost: ( parent, args, context, info) => {
         const { author, title, content, published} = args
+        const userId = getUserId(context.request)
         const newProfile = context.prisma.post.create({
             data: {
               id:uuid(),
@@ -137,7 +139,7 @@ const resolvers = {
               published,
                 author: { 
                   connect: {
-                    id: args.author
+                    id: userId
                   }
 
                 }
@@ -162,7 +164,7 @@ const resolvers = {
           }
         })
         if (!user){
-          throw new Error('Nie mogę znaleźć urzytkownika')
+          throw new Error('Nie mogę znaleźć użytkownika')
         }
 
         const isMatch = await bcrypt.compare(args.password, user.password)
@@ -190,7 +192,7 @@ const server = new GraphQLServer({
   typeDefs,
   resolvers,
   context(request) {
-    console.log(request.request.headers)
+    //console.log(request.request.headers)
     return {
       prisma,
       request
