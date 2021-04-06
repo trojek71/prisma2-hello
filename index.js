@@ -189,8 +189,12 @@ const prisma = new PrismaClient()
 const server = new GraphQLServer({
   typeDefs,
   resolvers,
-  context: {
-    prisma,
+  context(request) {
+    console.log(request.request.headers)
+    return {
+      prisma,
+      request
+    }
   }
 })
 
