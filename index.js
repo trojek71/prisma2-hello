@@ -43,6 +43,7 @@ type User {
         user(id: String!): User
         posts: [Post]
         profile(id: String):Profile
+        me:User!
     }
 
     type Mutation {
@@ -82,6 +83,8 @@ const resolvers = {
             })
           },
           posts: async (parent, args, context, info) => {
+           const userId = getUserId(context.request)
+           console.log(userId)
             return context.prisma.post.findMany()
           },
           profile: async (parent, args, context, info ) =>{
@@ -92,7 +95,16 @@ const resolvers = {
               },
               include: {user: true}
             })
-          }
+          },
+          me(parent, args, context, info) {
+        const userId = getUserId(context.request)
+       // const{id}= args
+        return context.prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        })
+    },
     },
    
     Mutation: {
@@ -131,7 +143,7 @@ const resolvers = {
       createPost: ( parent, args, context, info) => {
         const { author, title, content, published} = args
         const userId = getUserId(context.request)
-        const newProfile = context.prisma.post.create({
+        const newPost = context.prisma.post.create({
             data: {
               id:uuid(),
               title,
@@ -145,7 +157,7 @@ const resolvers = {
                 }
             }
         })
-        return newProfile
+        return newPost
       },
       deleteUser: (parent, args, context, info) => {
         const{id} = args

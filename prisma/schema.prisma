@@ -3,7 +3,7 @@ generator client {
 }
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://postgres:tomek123@192.168.12.5:5432/db03?schema=prisma2"
+  url      = env("DATABASE_URL")
 }
 
 model Post {
