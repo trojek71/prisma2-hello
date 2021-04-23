@@ -68,16 +68,17 @@ const resolvers = {
   DateTime: GraphQLDateTime,
     Query: {
         users: async (parent, args, context, info) =>{
-             return context.prisma.user.findMany({
+             // const userId = getUserId(context.request)
+          return context.prisma.user.findMany({
                  include:{ profile:true, posts: true }
              })
         },
 
         user: async (parent, args, context, info) => {
-           const{ id } = args
+          const userId = getUserId(context.request)
             return context.prisma.user.findUnique({
               where: {
-                id: args.id,
+                id: userId,
               },
               include: { profile: true }
             })
@@ -85,7 +86,11 @@ const resolvers = {
           posts: async (parent, args, context, info) => {
            const userId = getUserId(context.request)
            console.log(userId)
-            return context.prisma.post.findMany()
+            return context.prisma.post.findMany({
+              include:{
+                author:true
+              }
+            })
           },
           profile: async (parent, args, context, info ) =>{
             const{id}= args
